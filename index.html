@@ -390,29 +390,185 @@
       padding: 0 12px 8px 12px;
     }
 
-    #system-prompt {
+    #system-prompt-preview {
       width: 100%;
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 8px 10px;
-      font-size: 12px;
+      font-size: 11px;
       font-family: inherit;
-      resize: vertical;
-      min-height: 50px;
-      max-height: 300px;
-      outline: none;
-      transition: border-color 0.2s;
       line-height: 1.4;
+      min-height: 32px;
+      max-height: 48px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 6px;
     }
 
-    #system-prompt:focus {
+    #system-prompt-preview:hover {
       border-color: var(--accent);
     }
 
-    #system-prompt::placeholder {
+    #system-prompt-preview.empty {
+      font-style: italic;
       color: var(--text-muted);
+    }
+
+    .system-prompt-edit-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .system-prompt-edit-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .system-prompt-edit-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 640px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      flex: 1;
+      overflow: auto;
+    }
+
+    #system-prompt-modal-textarea {
+      width: 100%;
+      min-height: 200px;
+      max-height: 50vh;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+
+    #system-prompt-modal-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    #system-prompt-modal-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-footer button {
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .modal-btn-cancel {
+      background: none;
+      color: var(--text);
+    }
+
+    .modal-btn-cancel:hover {
+      background: var(--bg);
+    }
+
+    .modal-btn-save {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .modal-btn-save:hover {
+      filter: brightness(1.1);
     }
 
     /* System Info in sidebar */
@@ -975,7 +1131,11 @@
           <span class="section-toggle">&#9660;</span>
         </div>
         <div class="sidebar-section-body">
-          <textarea id="system-prompt" rows="3" placeholder="z.B. Du bist ein hilfreicher Assistent, der auf Deutsch antwortet..."></textarea>
+          <div id="system-prompt-preview" class="empty" onclick="openSystemPromptModal()">Kein System-Prompt gesetzt</div>
+          <button class="system-prompt-edit-btn" onclick="openSystemPromptModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            Bearbeiten
+          </button>
         </div>
       </div>
 
@@ -1014,6 +1174,23 @@
         <textarea id="message-input" rows="1" placeholder="Nachricht eingeben... (Enter = Senden, Shift+Enter = Zeilenumbruch)"></textarea>
         <button id="send-btn">Senden</button>
         <button id="clear-btn">Leeren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Prompt Modal -->
+  <div class="modal-overlay" id="system-prompt-modal">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>System-Prompt bearbeiten</h3>
+        <button class="modal-close-btn" onclick="closeSystemPromptModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="system-prompt-modal-textarea" placeholder="z.B. Du bist ein hilfreicher Assistent, der auf Deutsch antwortet..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn-cancel" onclick="closeSystemPromptModal()">Abbrechen</button>
+        <button class="modal-btn-save" onclick="saveSystemPromptModal()">Speichern</button>
       </div>
     </div>
   </div>
@@ -1128,7 +1305,9 @@
     const welcome = document.getElementById('welcome');
     const chatList = document.getElementById('chat-list');
     const newChatBtn = document.getElementById('new-chat-btn');
-    const systemPromptInput = document.getElementById('system-prompt');
+    const systemPromptPreview = document.getElementById('system-prompt-preview');
+    const systemPromptModal = document.getElementById('system-prompt-modal');
+    const systemPromptModalTextarea = document.getElementById('system-prompt-modal-textarea');
     const sysinfoContent = document.getElementById('sysinfo-content');
     const tempRange = document.getElementById('temperature-range');
     const tempValue = document.getElementById('temperature-value');
@@ -1170,16 +1349,55 @@
 
     // Apply saved settings to UI
     apiUrlInput.value = state.apiUrl;
-    systemPromptInput.value = state.systemPrompt;
+    updateSystemPromptPreview();
     tempRange.value = state.temperature; tempValue.textContent = state.temperature;
     maxTokensRange.value = state.maxTokens; maxTokensValue.textContent = state.maxTokens;
     topPRange.value = state.topP; topPValue.textContent = state.topP;
 
-    // --- System Prompt ---
-    systemPromptInput.addEventListener('input', () => {
-      state.systemPrompt = systemPromptInput.value;
+    // --- System Prompt Modal ---
+    function updateSystemPromptPreview() {
+      const text = state.systemPrompt.trim();
+      if (text) {
+        systemPromptPreview.textContent = text;
+        systemPromptPreview.classList.remove('empty');
+      } else {
+        systemPromptPreview.textContent = 'Kein System-Prompt gesetzt';
+        systemPromptPreview.classList.add('empty');
+      }
+    }
+
+    function openSystemPromptModal() {
+      systemPromptModalTextarea.value = state.systemPrompt;
+      systemPromptModal.classList.add('open');
+      setTimeout(() => systemPromptModalTextarea.focus(), 50);
+    }
+
+    function closeSystemPromptModal() {
+      systemPromptModal.classList.remove('open');
+    }
+
+    function saveSystemPromptModal() {
+      state.systemPrompt = systemPromptModalTextarea.value;
       persistSettings();
+      updateSystemPromptPreview();
+      closeSystemPromptModal();
+    }
+
+    // Close modal on overlay click
+    systemPromptModal.addEventListener('click', (e) => {
+      if (e.target === systemPromptModal) closeSystemPromptModal();
     });
+
+    // Close modal on Escape, save on Ctrl+Enter
+    systemPromptModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSystemPromptModal();
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) saveSystemPromptModal();
+    });
+
+    // Make functions available from onclick attributes
+    window.openSystemPromptModal = openSystemPromptModal;
+    window.closeSystemPromptModal = closeSystemPromptModal;
+    window.saveSystemPromptModal = saveSystemPromptModal;
 
     // --- Model parameters ---
     tempRange.addEventListener('input', () => {
