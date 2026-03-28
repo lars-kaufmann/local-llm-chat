@@ -17,7 +17,7 @@
       --bg-chat: #0f3460;
       --text: #e6e6e6;
       --text-muted: #a0a0b0;
-      --accent: #e94560;
+      --accent: #f47920;
       --user-bg: #533483;
       --assistant-bg: #1a1a40;
       --input-bg: #16213e;
@@ -47,6 +47,23 @@
     header h1 {
       font-size: 18px;
       font-weight: 600;
+    }
+
+    #header-logo {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+    }
+
+    header {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      padding: 0 20px 0 0;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      height: 48px;
     }
 
     .settings {
@@ -354,6 +371,7 @@
 <body>
   <header>
     <div style="display:flex; align-items:center; gap:8px;">
+      <img id="header-logo" src="amd-ryzen-ai-9hx.jpg" alt="AMD Ryzen AI">
       <h1>Local LLM Chat</h1>
       <div id="status-indicator" title="Verbindungsstatus"></div>
     </div>
