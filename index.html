@@ -306,6 +306,60 @@
       line-height: 1.3;
     }
 
+    .sidebar-field .param-label-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 3px;
+    }
+
+    .sidebar-field .param-label-row label {
+      margin-bottom: 0;
+    }
+
+    .param-info-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid var(--text-muted);
+      color: var(--text-muted);
+      font-size: 9px;
+      font-weight: 700;
+      cursor: help;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .param-info-icon:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .param-info-tooltip {
+      display: none;
+      position: fixed;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.5;
+      width: 250px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+    }
+
+    .param-info-tooltip::after {
+      display: none;
+    }
+
     .params-reset-row {
       display: flex;
       justify-content: flex-end;
@@ -876,7 +930,10 @@
             </select>
           </div>
           <div class="sidebar-field">
-            <label for="temperature-range">Temperature</label>
+            <div class="param-label-row">
+              <label for="temperature-range">Temperature</label>
+              <span class="param-info-icon">i<div class="param-info-tooltip">Steuert die Zufälligkeit der Antworten.<br><br><b>0.0</b> = Deterministisch, wählt immer das wahrscheinlichste Wort. Gut für Fakten und Code.<br><b>0.5–0.7</b> = Ausgewogen. Guter Standard für die meisten Aufgaben.<br><b>1.0+</b> = Sehr kreativ und variabel. Kann zu unvorhersehbaren Ergebnissen führen.</div></span>
+            </div>
             <div class="range-row">
               <input type="range" id="temperature-range" min="0" max="2" step="0.1" value="0.7">
               <span class="range-value" id="temperature-value">0.7</span>
@@ -884,15 +941,21 @@
             <div class="param-hint">Niedrig = fokussiert, hoch = kreativer</div>
           </div>
           <div class="sidebar-field">
-            <label for="max-tokens-range">Max Tokens</label>
+            <div class="param-label-row">
+              <label for="max-tokens-range">Max Tokens</label>
+              <span class="param-info-icon">i<div class="param-info-tooltip">Begrenzt die maximale Länge der Antwort in Tokens (ca. 1 Token = 0.75 Wörter).<br><br><b>256–512</b> = Kurze, knappe Antworten.<br><b>1024–2048</b> = Ausführliche Erklärungen.<br><b>4096+</b> = Sehr lange Texte, Code oder Artikel. Hohe Werte brauchen mehr Zeit und Speicher.</div></span>
+            </div>
             <div class="range-row">
               <input type="range" id="max-tokens-range" min="64" max="8192" step="64" value="2048">
               <span class="range-value" id="max-tokens-value">2048</span>
             </div>
-            <div class="param-hint">Maximale Laenge der Antwort</div>
+            <div class="param-hint">Maximale Länge der Antwort</div>
           </div>
           <div class="sidebar-field">
-            <label for="top-p-range">Top-P</label>
+            <div class="param-label-row">
+              <label for="top-p-range">Top-P</label>
+              <span class="param-info-icon">i<div class="param-info-tooltip">Nucleus-Sampling: Das Modell wählt nur aus den Tokens, deren kumulierte Wahrscheinlichkeit diesen Wert erreicht.<br><br><b>0.1</b> = Nur die allerbesten Tokens. Sehr vorhersagbar.<br><b>0.9</b> = Breite Auswahl, natürlicherer Text.<br><b>1.0</b> = Alle Tokens möglich.<br><br>Tipp: Entweder Temperature oder Top-P anpassen, selten beides gleichzeitig.</div></span>
+            </div>
             <div class="range-row">
               <input type="range" id="top-p-range" min="0" max="1" step="0.05" value="0.9">
               <span class="range-value" id="top-p-value">0.9</span>
@@ -1249,7 +1312,7 @@
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-chat-btn';
         deleteBtn.textContent = '\u00D7';
-        deleteBtn.title = 'Chat loeschen';
+        deleteBtn.title = 'Chat löschen';
         deleteBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           deleteConversation(convo.id);
@@ -1702,7 +1765,7 @@
         const info = await res.json();
         renderSystemInfo(info);
       } catch (err) {
-        sysinfoContent.innerHTML = `<div class="sysinfo-loading">Nicht verfuegbar: ${err.message}</div>`;
+        sysinfoContent.innerHTML = `<div class="sysinfo-loading">Nicht verfügbar: ${err.message}</div>`;
       }
     }
 
@@ -1732,7 +1795,7 @@
             ${npu.name ? npu.name : 'Nicht erkannt'}
             ${npu.family ? `<div class="detail">${npu.family}</div>` : ''}
             <span class="status-badge ${npu.available ? 'available' : 'unavailable'}">
-              ${npu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+              ${npu.available ? 'Verfügbar' : 'Nicht verfügbar'}
             </span>
           </div>
         </div>`;
@@ -1745,7 +1808,7 @@
               ${igpu.name}
               ${igpu.vram_gb ? `<div class="detail">VRAM: ${igpu.vram_gb} GB</div>` : ''}
               <span class="status-badge ${igpu.available ? 'available' : 'unavailable'}">
-                ${igpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+                ${igpu.available ? 'Verfügbar' : 'Nicht verfügbar'}
               </span>
             </div>
           </div>`;
@@ -1760,7 +1823,7 @@
                 ${dgpu.name || 'Unbekannt'}
                 ${dgpu.vram_gb ? `<div class="detail">VRAM: ${dgpu.vram_gb} GB</div>` : ''}
                 <span class="status-badge ${dgpu.available ? 'available' : 'unavailable'}">
-                  ${dgpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+                  ${dgpu.available ? 'Verfügbar' : 'Nicht verfügbar'}
                 </span>
               </div>
             </div>`;
@@ -1779,6 +1842,42 @@
 
       sysinfoContent.innerHTML = `<div class="sysinfo-grid-sidebar">${cards}</div>`;
     }
+
+    // --- Tooltip positioning for parameter info icons ---
+    document.querySelectorAll('.param-info-icon').forEach(icon => {
+      const tooltip = icon.querySelector('.param-info-tooltip');
+      if (!tooltip) return;
+
+      icon.addEventListener('mouseenter', () => {
+        const rect = icon.getBoundingClientRect();
+        const sidebarRect = document.getElementById('sidebar').getBoundingClientRect();
+
+        // Position tooltip to the right of the sidebar, vertically centered on the icon
+        let top = rect.top + rect.height / 2 - 40; // offset so tooltip isn't too high
+        let left = sidebarRect.right + 8;
+
+        // Keep tooltip within viewport vertically
+        const tooltipHeight = 120; // approximate
+        if (top + tooltipHeight > window.innerHeight - 8) {
+          top = window.innerHeight - tooltipHeight - 8;
+        }
+        if (top < 8) top = 8;
+
+        // If tooltip would overflow right side of viewport, show to the left of sidebar instead
+        const tooltipWidth = 250;
+        if (left + tooltipWidth > window.innerWidth - 8) {
+          left = sidebarRect.left - tooltipWidth - 8;
+        }
+
+        tooltip.style.top = top + 'px';
+        tooltip.style.left = left + 'px';
+        tooltip.style.display = 'block';
+      });
+
+      icon.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+    });
 
     // Retry connection every 5s if not connected
     setInterval(() => {
