@@ -22,7 +22,7 @@
       --assistant-bg: #1a1a40;
       --input-bg: #16213e;
       --border: #2a2a4a;
-      --sidebar-width: 260px;
+      --sidebar-width: 280px;
     }
 
     body {
@@ -35,7 +35,7 @@
       overflow: hidden;
     }
 
-    /* Header */
+    /* Header - minimal */
     header {
       display: flex;
       align-items: stretch;
@@ -57,31 +57,6 @@
       height: 100%;
       width: auto;
       object-fit: contain;
-    }
-
-    .settings {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .settings label {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .settings input, .settings select {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 13px;
-    }
-
-    .settings input:focus, .settings select:focus {
-      outline: none;
-      border-color: var(--accent);
     }
 
     #status-indicator {
@@ -190,54 +165,93 @@
       flex-shrink: 0;
     }
 
-    .chat-item:hover .delete-chat-btn {
-      opacity: 1;
-    }
+    .chat-item:hover .delete-chat-btn { opacity: 1; }
+    .chat-item .delete-chat-btn:hover { color: #e94960; }
 
-    .chat-item .delete-chat-btn:hover {
-      color: #e94960;
-    }
-
-    /* System prompt area */
-    #system-prompt-area {
-      padding: 0 12px 8px 12px;
+    /* Sidebar bottom sections */
+    .sidebar-section {
       border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
       flex-shrink: 0;
     }
 
-    #system-prompt-resize-handle {
-      height: 6px;
-      cursor: ns-resize;
+    .sidebar-section-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      justify-content: space-between;
+      padding: 8px 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
     }
 
-    #system-prompt-resize-handle::after {
-      content: '';
-      display: block;
-      width: 32px;
-      height: 3px;
-      border-radius: 2px;
-      background: var(--border);
-      transition: background 0.2s;
+    .sidebar-section-header:hover {
+      background: rgba(255,255,255,0.03);
     }
 
-    #system-prompt-resize-handle:hover::after {
-      background: var(--accent);
-    }
-
-    #system-prompt-area label {
+    .sidebar-section-header .section-title {
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       color: var(--text-muted);
-      display: block;
-      margin-bottom: 4px;
       letter-spacing: 0.5px;
+    }
+
+    .sidebar-section-header .section-toggle {
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .sidebar-section.open .sidebar-section-header .section-toggle {
+      transform: rotate(180deg);
+    }
+
+    .sidebar-section-body {
+      display: none;
+      padding: 0 12px 10px 12px;
+    }
+
+    .sidebar-section.open .sidebar-section-body {
+      display: block;
+    }
+
+    /* Sidebar form elements */
+    .sidebar-field {
+      margin-bottom: 8px;
+    }
+
+    .sidebar-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .sidebar-field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .sidebar-field input,
+    .sidebar-field select {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .sidebar-field input:focus,
+    .sidebar-field select:focus {
+      border-color: var(--accent);
+    }
+
+    /* System prompt area */
+    #system-prompt-section .sidebar-section-body {
+      padding: 0 12px 8px 12px;
     }
 
     #system-prompt {
@@ -249,10 +263,9 @@
       padding: 8px 10px;
       font-size: 12px;
       font-family: inherit;
-      resize: none;
-      min-height: 60px;
-      height: 80px;
-      flex: 1;
+      resize: vertical;
+      min-height: 50px;
+      max-height: 300px;
       outline: none;
       transition: border-color 0.2s;
       line-height: 1.4;
@@ -264,6 +277,65 @@
 
     #system-prompt::placeholder {
       color: var(--text-muted);
+    }
+
+    /* System Info in sidebar */
+    .sysinfo-grid-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sysinfo-card-sm {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .sysinfo-card-sm .card-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .sysinfo-card-sm .card-value {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .sysinfo-card-sm .detail {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sysinfo-card-sm .status-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .status-badge.available {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+
+    .status-badge.unavailable {
+      background: rgba(233, 69, 96, 0.2);
+      color: var(--accent);
+    }
+
+    .sysinfo-loading {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 6px;
     }
 
     /* Main content */
@@ -330,7 +402,8 @@
       color: var(--text-muted);
     }
 
-    .message .copy-msg-btn {
+    .message .copy-msg-btn,
+    .message .resend-msg-btn {
       background: none;
       border: none;
       color: var(--text-muted);
@@ -342,11 +415,13 @@
       transition: opacity 0.15s, color 0.15s;
     }
 
-    .message:hover .copy-msg-btn {
+    .message:hover .copy-msg-btn,
+    .message:hover .resend-msg-btn {
       opacity: 1;
     }
 
-    .message .copy-msg-btn:hover {
+    .message .copy-msg-btn:hover,
+    .message .resend-msg-btn:hover {
       color: var(--accent);
     }
 
@@ -474,95 +549,6 @@
       font-size: 14px;
     }
 
-    /* System Info Panel */
-    #sysinfo-toggle {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      white-space: nowrap;
-    }
-
-    #sysinfo-toggle:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    #sysinfo-panel {
-      display: none;
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      flex-shrink: 0;
-      overflow-x: auto;
-    }
-
-    #sysinfo-panel.open {
-      display: block;
-    }
-
-    .sysinfo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .sysinfo-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-    }
-
-    .sysinfo-card .card-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    .sysinfo-card .card-value {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.4;
-    }
-
-    .sysinfo-card .card-value .detail {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .sysinfo-card .status-badge {
-      display: inline-block;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .status-badge.available {
-      background: rgba(76, 175, 80, 0.2);
-      color: #4caf50;
-    }
-
-    .status-badge.unavailable {
-      background: rgba(233, 69, 96, 0.2);
-      color: var(--accent);
-    }
-
-    .sysinfo-loading {
-      color: var(--text-muted);
-      font-size: 13px;
-      text-align: center;
-      padding: 8px;
-    }
-
     /* Markdown content styles */
     .message.assistant .msg-content h1,
     .message.assistant .msg-content h2,
@@ -641,9 +627,7 @@
       transition: opacity 0.2s;
     }
 
-    .message.assistant .msg-content pre:hover .copy-code-btn {
-      opacity: 1;
-    }
+    .message.assistant .msg-content pre:hover .copy-code-btn { opacity: 1; }
 
     .message.assistant .msg-content pre .copy-code-btn:hover {
       background: rgba(255,255,255,0.2);
@@ -680,17 +664,10 @@
       text-decoration: none;
     }
 
-    .message.assistant .msg-content a:hover {
-      text-decoration: underline;
-    }
+    .message.assistant .msg-content a:hover { text-decoration: underline; }
 
-    .message.assistant .msg-content > *:first-child {
-      margin-top: 0;
-    }
-
-    .message.assistant .msg-content > *:last-child {
-      margin-bottom: 0;
-    }
+    .message.assistant .msg-content > *:first-child { margin-top: 0; }
+    .message.assistant .msg-content > *:last-child { margin-bottom: 0; }
   </style>
   <!-- Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
@@ -705,20 +682,7 @@
       <h1>Local LLM Chat</h1>
       <div id="status-indicator" title="Verbindungsstatus"></div>
     </div>
-    <div class="settings">
-      <label for="api-url">API URL:</label>
-      <input type="text" id="api-url" value="http://localhost:8000/api/v1" size="30">
-      <label for="model-select">Modell:</label>
-      <select id="model-select">
-        <option value="">Lade Modelle...</option>
-      </select>
-      <button id="sysinfo-toggle">System-Info</button>
-    </div>
   </header>
-
-  <div id="sysinfo-panel">
-    <div class="sysinfo-loading">Lade Systeminformationen...</div>
-  </div>
 
   <div id="app-body">
     <!-- Sidebar -->
@@ -727,10 +691,49 @@
         <button id="new-chat-btn">+ Neuer Chat</button>
       </div>
       <div id="chat-list"></div>
-      <div id="system-prompt-area">
-        <div id="system-prompt-resize-handle" title="Ziehen zum Vergroessern"></div>
-        <label for="system-prompt">System-Prompt</label>
-        <textarea id="system-prompt" rows="3" placeholder="z.B. Du bist ein hilfreicher Assistent, der auf Deutsch antwortet..."></textarea>
+
+      <!-- Settings section -->
+      <div class="sidebar-section open" id="settings-section">
+        <div class="sidebar-section-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="section-title">Einstellungen</span>
+          <span class="section-toggle">&#9660;</span>
+        </div>
+        <div class="sidebar-section-body">
+          <div class="sidebar-field">
+            <label for="api-url">API URL</label>
+            <input type="text" id="api-url" value="http://localhost:8000/api/v1">
+          </div>
+          <div class="sidebar-field">
+            <label for="model-select">Modell</label>
+            <select id="model-select">
+              <option value="">Lade Modelle...</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Prompt section -->
+      <div class="sidebar-section open" id="system-prompt-section">
+        <div class="sidebar-section-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="section-title">System-Prompt</span>
+          <span class="section-toggle">&#9660;</span>
+        </div>
+        <div class="sidebar-section-body">
+          <textarea id="system-prompt" rows="3" placeholder="z.B. Du bist ein hilfreicher Assistent, der auf Deutsch antwortet..."></textarea>
+        </div>
+      </div>
+
+      <!-- System Info section -->
+      <div class="sidebar-section" id="sysinfo-section">
+        <div class="sidebar-section-header" onclick="toggleSysinfo()">
+          <span class="section-title">System-Info</span>
+          <span class="section-toggle">&#9660;</span>
+        </div>
+        <div class="sidebar-section-body">
+          <div id="sysinfo-content">
+            <div class="sysinfo-loading">Lade...</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -761,7 +764,6 @@
 
   <script>
     // --- Configure marked.js with highlight.js ---
-    // marked v5+ uses extensions for highlighting, not setOptions
     marked.use({
       breaks: true,
       gfm: true,
@@ -787,7 +789,6 @@
         return marked.parse(text);
       } catch (e) {
         console.error('Markdown parse error:', e);
-        // Fallback: return escaped HTML
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -866,39 +867,16 @@
     const chatList = document.getElementById('chat-list');
     const newChatBtn = document.getElementById('new-chat-btn');
     const systemPromptInput = document.getElementById('system-prompt');
+    const sysinfoContent = document.getElementById('sysinfo-content');
 
     // Apply saved settings to UI
     apiUrlInput.value = state.apiUrl;
     systemPromptInput.value = state.systemPrompt;
 
-    // --- System Prompt Resize Handle ---
-    const resizeHandle = document.getElementById('system-prompt-resize-handle');
-    const systemPromptArea = document.getElementById('system-prompt-area');
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      const startY = e.clientY;
-      const startHeight = systemPromptArea.offsetHeight;
-
-      function onMouseMove(e) {
-        const delta = startY - e.clientY;
-        const newHeight = Math.max(80, Math.min(400, startHeight + delta));
-        systemPromptArea.style.height = newHeight + 'px';
-      }
-
-      function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    });
-
     // --- System Prompt ---
     systemPromptInput.addEventListener('input', () => {
       state.systemPrompt = systemPromptInput.value;
-      saveSettings({ apiUrl: state.apiUrl, systemPrompt: state.systemPrompt });
+      saveSettings({ apiUrl: state.apiUrl, systemPrompt: state.systemPrompt, model: state.model });
     });
 
     // --- Auto-resize textarea ---
@@ -922,15 +900,24 @@
     // --- API URL change ---
     apiUrlInput.addEventListener('change', () => {
       state.apiUrl = apiUrlInput.value.replace(/\/+$/, '');
-      saveSettings({ apiUrl: state.apiUrl, systemPrompt: state.systemPrompt });
+      saveSettings({ apiUrl: state.apiUrl, systemPrompt: state.systemPrompt, model: state.model });
       fetchModels();
-      fetchSystemInfo();
     });
 
     // --- Model change ---
     modelSelect.addEventListener('change', () => {
       state.model = modelSelect.value;
+      saveSettings({ apiUrl: state.apiUrl, systemPrompt: state.systemPrompt, model: state.model });
     });
+
+    // --- System Info toggle ---
+    function toggleSysinfo() {
+      const section = document.getElementById('sysinfo-section');
+      section.classList.toggle('open');
+      if (section.classList.contains('open')) {
+        fetchSystemInfo();
+      }
+    }
 
     // --- Conversation management ---
     function createNewChat() {
@@ -946,14 +933,10 @@
     }
 
     function switchToConversation(id) {
-      // Save current conversation first
       saveCurrentConversation();
-
       state.currentConvoId = id;
       const convo = state.conversations.find(c => c.id === id);
       state.messages = convo ? [...convo.messages] : [];
-
-      // Render chat
       renderChat();
       renderChatList();
       messageInput.focus();
@@ -972,7 +955,6 @@
     function deleteConversation(id) {
       state.conversations = state.conversations.filter(c => c.id !== id);
       saveConversations(state.conversations);
-
       if (state.currentConvoId === id) {
         if (state.conversations.length > 0) {
           switchToConversation(state.conversations[0].id);
@@ -1012,7 +994,6 @@
 
     function renderChat() {
       chatContainer.innerHTML = '';
-
       if (state.messages.length === 0) {
         chatContainer.appendChild(welcome);
         welcome.style.display = '';
@@ -1049,6 +1030,16 @@
         });
 
         state.model = models[0].id || models[0].name || models[0];
+
+        const saved = loadSettings().model;
+        if (saved) {
+          const match = models.find(m => (m.id || m.name || m) === saved);
+          if (match) {
+            state.model = saved;
+            modelSelect.value = saved;
+          }
+        }
+
         statusIndicator.className = 'connected';
         statusIndicator.title = 'Verbunden';
       } catch (err) {
@@ -1074,33 +1065,27 @@
       const text = messageInput.value.trim();
       if (!text || state.isGenerating) return;
 
-      // Create conversation if none active
       if (!state.currentConvoId) {
         createNewChat();
       }
 
-      // Hide welcome
       welcome.style.display = 'none';
 
-      // Add user message
       state.messages.push({ role: 'user', content: text });
       appendMessage('user', text);
 
       messageInput.value = '';
       messageInput.style.height = 'auto';
 
-      // Save immediately so title updates
       saveCurrentConversation();
       renderChatList();
 
-      // Start generating
       state.isGenerating = true;
       sendBtn.disabled = true;
       sendBtn.textContent = 'Stop';
       sendBtn.disabled = false;
       sendBtn.onclick = stopGenerating;
 
-      // Add assistant placeholder
       const assistantEl = appendMessage('assistant', '');
       const contentEl = assistantEl.querySelector('.msg-content');
       showTypingIndicator(contentEl);
@@ -1125,7 +1110,6 @@
           throw new Error(`API Fehler: HTTP ${res.status} ${res.statusText} ${errBody}`);
         }
 
-        // Stream response
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -1164,15 +1148,11 @@
                 assistantContent += delta;
                 scheduleRender();
               }
-            } catch (e) {
-              // ignore parse errors on partial chunks
-            }
+            } catch (e) {}
           }
         }
 
-        if (renderTimeout) {
-          clearTimeout(renderTimeout);
-        }
+        if (renderTimeout) clearTimeout(renderTimeout);
 
         if (assistantContent) {
           contentEl.innerHTML = renderMarkdown(assistantContent);
@@ -1228,18 +1208,15 @@
       }
     }
 
-    // --- Stop generating ---
     function stopGenerating() {
       if (state.abortController) {
         state.abortController.abort();
       }
     }
 
-    // --- Copy message content ---
     function copyMessage(btn) {
       const msgEl = btn.closest('.message');
       const contentEl = msgEl.querySelector('.msg-content');
-      // For user messages use textContent, for assistant use the raw markdown from state
       const msgIndex = Array.from(chatContainer.querySelectorAll('.message')).indexOf(msgEl);
       const rawContent = state.messages[msgIndex]?.content || contentEl.textContent;
       navigator.clipboard.writeText(rawContent).then(() => {
@@ -1248,12 +1225,22 @@
       });
     }
 
-    // --- Append message to chat ---
+    function resendMessage(btn) {
+      if (state.isGenerating) return;
+      const msgEl = btn.closest('.message');
+      const contentEl = msgEl.querySelector('.msg-content');
+      const text = contentEl.textContent;
+      if (text) {
+        messageInput.value = text;
+        messageInput.focus();
+        sendMessage();
+      }
+    }
+
     function appendMessage(role, content, addToState) {
       const div = document.createElement('div');
       div.className = `message ${role}`;
 
-      // Header with role label and copy button
       const header = document.createElement('div');
       header.className = 'msg-header';
 
@@ -1267,6 +1254,13 @@
       copyBtn.addEventListener('click', function() { copyMessage(this); });
 
       header.appendChild(label);
+      if (role === 'user') {
+        const resendBtn = document.createElement('button');
+        resendBtn.className = 'resend-msg-btn';
+        resendBtn.textContent = 'Erneut senden';
+        resendBtn.addEventListener('click', function() { resendMessage(this); });
+        header.appendChild(resendBtn);
+      }
       header.appendChild(copyBtn);
 
       const contentEl = document.createElement('div');
@@ -1285,17 +1279,14 @@
       return div;
     }
 
-    // --- Typing indicator ---
     function showTypingIndicator(el) {
       el.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
     }
 
-    // --- Scroll to bottom ---
     function scrollToBottom() {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // --- Clear current chat ---
     function clearCurrentChat() {
       if (!state.currentConvoId) return;
       state.messages = [];
@@ -1306,9 +1297,7 @@
 
     // --- Init ---
     fetchModels();
-    fetchSystemInfo();
 
-    // Load last conversation or create new one
     if (state.conversations.length > 0) {
       switchToConversation(state.conversations[0].id);
     } else {
@@ -1318,16 +1307,6 @@
     messageInput.focus();
 
     // --- System Info ---
-    const sysinfoToggle = document.getElementById('sysinfo-toggle');
-    const sysinfoPanel = document.getElementById('sysinfo-panel');
-
-    sysinfoToggle.addEventListener('click', () => {
-      sysinfoPanel.classList.toggle('open');
-      if (sysinfoPanel.classList.contains('open')) {
-        fetchSystemInfo();
-      }
-    });
-
     async function fetchSystemInfo() {
       try {
         const res = await fetch(`${state.apiUrl}/system-info`);
@@ -1335,7 +1314,7 @@
         const info = await res.json();
         renderSystemInfo(info);
       } catch (err) {
-        sysinfoPanel.innerHTML = `<div class="sysinfo-loading">System-Info nicht verfuegbar: ${err.message}</div>`;
+        sysinfoContent.innerHTML = `<div class="sysinfo-loading">Nicht verfuegbar: ${err.message}</div>`;
       }
     }
 
@@ -1349,7 +1328,7 @@
       let cards = '';
 
       cards += `
-        <div class="sysinfo-card">
+        <div class="sysinfo-card-sm">
           <div class="card-title">CPU</div>
           <div class="card-value">
             ${cpu.name || info.Processor || 'Unbekannt'}
@@ -1359,12 +1338,11 @@
         </div>`;
 
       cards += `
-        <div class="sysinfo-card">
+        <div class="sysinfo-card-sm">
           <div class="card-title">NPU</div>
           <div class="card-value">
             ${npu.name ? npu.name : 'Nicht erkannt'}
-            ${npu.family ? `<div class="detail">Architektur: ${npu.family}</div>` : ''}
-            ${npu.power_mode ? `<div class="detail">Power-Modus: ${npu.power_mode}</div>` : ''}
+            ${npu.family ? `<div class="detail">${npu.family}</div>` : ''}
             <span class="status-badge ${npu.available ? 'available' : 'unavailable'}">
               ${npu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
             </span>
@@ -1373,12 +1351,11 @@
 
       if (igpu.name) {
         cards += `
-          <div class="sysinfo-card">
-            <div class="card-title">Integrierte GPU</div>
+          <div class="sysinfo-card-sm">
+            <div class="card-title">iGPU</div>
             <div class="card-value">
               ${igpu.name}
               ${igpu.vram_gb ? `<div class="detail">VRAM: ${igpu.vram_gb} GB</div>` : ''}
-              ${igpu.family ? `<div class="detail">Architektur: ${igpu.family}</div>` : ''}
               <span class="status-badge ${igpu.available ? 'available' : 'unavailable'}">
                 ${igpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
               </span>
@@ -1389,12 +1366,11 @@
       if (Array.isArray(dgpus)) {
         dgpus.forEach((dgpu, i) => {
           cards += `
-            <div class="sysinfo-card">
-              <div class="card-title">Dedizierte GPU${dgpus.length > 1 ? ` #${i+1}` : ''}</div>
+            <div class="sysinfo-card-sm">
+              <div class="card-title">dGPU${dgpus.length > 1 ? ` #${i+1}` : ''}</div>
               <div class="card-value">
                 ${dgpu.name || 'Unbekannt'}
                 ${dgpu.vram_gb ? `<div class="detail">VRAM: ${dgpu.vram_gb} GB</div>` : ''}
-                ${dgpu.family ? `<div class="detail">Architektur: ${dgpu.family}</div>` : ''}
                 <span class="status-badge ${dgpu.available ? 'available' : 'unavailable'}">
                   ${dgpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
                 </span>
@@ -1404,17 +1380,16 @@
       }
 
       cards += `
-        <div class="sysinfo-card">
+        <div class="sysinfo-card-sm">
           <div class="card-title">System</div>
           <div class="card-value">
             ${info['OEM System'] || 'Unbekannt'}
             <div class="detail">RAM: ${info['Physical Memory'] || '?'}</div>
             <div class="detail">OS: ${info['OS Version'] || '?'}</div>
-            ${info['Windows Power Setting'] ? `<div class="detail">Energieplan: ${info['Windows Power Setting']}</div>` : ''}
           </div>
         </div>`;
 
-      sysinfoPanel.innerHTML = `<div class="sysinfo-grid">${cards}</div>`;
+      sysinfoContent.innerHTML = `<div class="sysinfo-grid-sidebar">${cards}</div>`;
     }
 
     // Retry connection every 5s if not connected
