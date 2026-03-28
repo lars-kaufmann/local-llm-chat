@@ -260,6 +260,95 @@
       border-radius: 4px;
       font-size: 14px;
     }
+
+    /* System Info Panel */
+    #sysinfo-toggle {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+
+    #sysinfo-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    #sysinfo-panel {
+      display: none;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+
+    #sysinfo-panel.open {
+      display: block;
+    }
+
+    .sysinfo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .sysinfo-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .sysinfo-card .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .sysinfo-card .card-value {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .sysinfo-card .card-value .detail {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .sysinfo-card .status-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .status-badge.available {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+
+    .status-badge.unavailable {
+      background: rgba(233, 69, 96, 0.2);
+      color: var(--accent);
+    }
+
+    .sysinfo-loading {
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 8px;
+    }
   </style>
 </head>
 <body>
@@ -275,8 +364,13 @@
       <select id="model-select">
         <option value="">Lade Modelle...</option>
       </select>
+      <button id="sysinfo-toggle">System-Info</button>
     </div>
   </header>
+
+  <div id="sysinfo-panel">
+    <div class="sysinfo-loading">Lade Systeminformationen...</div>
+  </div>
 
   <div id="chat-container">
     <div id="welcome">
@@ -340,6 +434,7 @@
     apiUrlInput.addEventListener('change', () => {
       state.apiUrl = apiUrlInput.value.replace(/\/+$/, '');
       fetchModels();
+      fetchSystemInfo();
     });
 
     // --- Model change ---
@@ -559,7 +654,113 @@
 
     // --- Init ---
     fetchModels();
+    fetchSystemInfo();
     messageInput.focus();
+
+    // --- System Info ---
+    const sysinfoToggle = document.getElementById('sysinfo-toggle');
+    const sysinfoPanel = document.getElementById('sysinfo-panel');
+
+    sysinfoToggle.addEventListener('click', () => {
+      sysinfoPanel.classList.toggle('open');
+      if (sysinfoPanel.classList.contains('open')) {
+        fetchSystemInfo();
+      }
+    });
+
+    async function fetchSystemInfo() {
+      try {
+        const res = await fetch(`${state.apiUrl}/system-info`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const info = await res.json();
+        renderSystemInfo(info);
+      } catch (err) {
+        sysinfoPanel.innerHTML = `<div class="sysinfo-loading">System-Info nicht verfuegbar: ${err.message}</div>`;
+      }
+    }
+
+    function renderSystemInfo(info) {
+      const devices = info.devices || {};
+      const cpu = devices.cpu || {};
+      const igpu = devices.amd_igpu || {};
+      const npu = devices.amd_npu || {};
+      const dgpus = devices.amd_dgpu || [];
+
+      let cards = '';
+
+      // CPU
+      cards += `
+        <div class="sysinfo-card">
+          <div class="card-title">CPU</div>
+          <div class="card-value">
+            ${cpu.name || info.Processor || 'Unbekannt'}
+            <div class="detail">${cpu.cores || '?'} Kerne / ${cpu.threads || '?'} Threads</div>
+            ${info['CPU Max Clock'] ? `<div class="detail">Max: ${info['CPU Max Clock']}</div>` : ''}
+          </div>
+        </div>`;
+
+      // NPU
+      cards += `
+        <div class="sysinfo-card">
+          <div class="card-title">NPU</div>
+          <div class="card-value">
+            ${npu.name ? npu.name : 'Nicht erkannt'}
+            ${npu.family ? `<div class="detail">Architektur: ${npu.family}</div>` : ''}
+            ${npu.power_mode ? `<div class="detail">Power-Modus: ${npu.power_mode}</div>` : ''}
+            <span class="status-badge ${npu.available ? 'available' : 'unavailable'}">
+              ${npu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+            </span>
+          </div>
+        </div>`;
+
+      // iGPU
+      if (igpu.name) {
+        cards += `
+          <div class="sysinfo-card">
+            <div class="card-title">Integrierte GPU</div>
+            <div class="card-value">
+              ${igpu.name}
+              ${igpu.vram_gb ? `<div class="detail">VRAM: ${igpu.vram_gb} GB</div>` : ''}
+              ${igpu.family ? `<div class="detail">Architektur: ${igpu.family}</div>` : ''}
+              <span class="status-badge ${igpu.available ? 'available' : 'unavailable'}">
+                ${igpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+              </span>
+            </div>
+          </div>`;
+      }
+
+      // dGPUs
+      if (Array.isArray(dgpus)) {
+        dgpus.forEach((dgpu, i) => {
+          cards += `
+            <div class="sysinfo-card">
+              <div class="card-title">Dedizierte GPU${dgpus.length > 1 ? ` #${i+1}` : ''}</div>
+              <div class="card-value">
+                ${dgpu.name || 'Unbekannt'}
+                ${dgpu.vram_gb ? `<div class="detail">VRAM: ${dgpu.vram_gb} GB</div>` : ''}
+                ${dgpu.family ? `<div class="detail">Architektur: ${dgpu.family}</div>` : ''}
+                <span class="status-badge ${dgpu.available ? 'available' : 'unavailable'}">
+                  ${dgpu.available ? 'Verfuegbar' : 'Nicht verfuegbar'}
+                </span>
+              </div>
+            </div>`;
+        });
+      }
+
+      // System
+      cards += `
+        <div class="sysinfo-card">
+          <div class="card-title">System</div>
+          <div class="card-value">
+            ${info['OEM System'] || 'Unbekannt'}
+            <div class="detail">RAM: ${info['Physical Memory'] || '?'}</div>
+            <div class="detail">OS: ${info['OS Version'] || '?'}</div>
+            ${info['Windows Power Setting'] ? `<div class="detail">Energieplan: ${info['Windows Power Setting']}</div>` : ''}
+          </div>
+        </div>`;
+
+      sysinfoPanel.innerHTML = `<div class="sysinfo-grid">${cards}</div>`;
+    }
 
     // Retry connection every 5s if not connected
     setInterval(() => {
