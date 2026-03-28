@@ -1072,7 +1072,7 @@
 
       <!-- Settings section -->
       <div class="sidebar-section open" id="settings-section">
-        <div class="sidebar-section-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="sidebar-section-header" onclick="toggleSection('settings-section')">
           <span class="section-title">Einstellungen</span>
           <span class="section-toggle">&#9660;</span>
         </div>
@@ -1128,7 +1128,7 @@
 
       <!-- System Prompt section -->
       <div class="sidebar-section open" id="system-prompt-section">
-        <div class="sidebar-section-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="sidebar-section-header" onclick="toggleSection('system-prompt-section')">
           <span class="section-title">System-Prompt</span>
           <span class="section-toggle">&#9660;</span>
         </div>
@@ -1348,6 +1348,30 @@
         temperature: state.temperature, maxTokens: state.maxTokens, topP: state.topP,
       });
     }
+
+    // --- Section open/close persistence ---
+    function toggleSection(id) {
+      const section = document.getElementById(id);
+      section.classList.toggle('open');
+      const isOpen = section.classList.contains('open');
+      const stored = JSON.parse(localStorage.getItem('llm-chat-sections') || '{}');
+      stored[id] = isOpen;
+      localStorage.setItem('llm-chat-sections', JSON.stringify(stored));
+    }
+    window.toggleSection = toggleSection;
+
+    // Restore section states
+    const savedSections = JSON.parse(localStorage.getItem('llm-chat-sections') || '{}');
+    ['settings-section', 'system-prompt-section'].forEach(id => {
+      if (savedSections[id] !== undefined) {
+        const section = document.getElementById(id);
+        if (savedSections[id]) {
+          section.classList.add('open');
+        } else {
+          section.classList.remove('open');
+        }
+      }
+    });
 
     // Apply saved settings to UI
     apiUrlInput.value = state.apiUrl;
