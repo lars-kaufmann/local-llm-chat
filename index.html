@@ -30,33 +30,7 @@
       background: var(--bg);
       color: var(--text);
       height: 100vh;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
-    }
-
-    /* Header - minimal */
-    header {
-      display: flex;
-      align-items: stretch;
-      justify-content: space-between;
-      padding: 0 20px 0 0;
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      height: 48px;
-      z-index: 10;
-    }
-
-    header h1 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    #header-logo {
-      height: 100%;
-      width: auto;
-      object-fit: contain;
     }
 
     #status-indicator {
@@ -75,7 +49,7 @@
     /* Main layout with sidebar */
     #app-body {
       display: flex;
-      flex: 1;
+      height: 100vh;
       overflow: hidden;
     }
 
@@ -94,7 +68,26 @@
       padding: 10px 12px;
       border-bottom: 1px solid var(--border);
       display: flex;
+      flex-direction: column;
       gap: 8px;
+    }
+
+    #sidebar-branding {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #header-logo {
+      height: 28px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    #sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     #new-chat-btn {
@@ -676,18 +669,15 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
 </head>
 <body>
-  <header>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <img id="header-logo" src="amd-ryzen-ai-9hx.jpg" alt="AMD Ryzen AI">
-      <h1>Local LLM Chat</h1>
-      <div id="status-indicator" title="Verbindungsstatus"></div>
-    </div>
-  </header>
-
   <div id="app-body">
     <!-- Sidebar -->
     <div id="sidebar">
       <div id="sidebar-header">
+        <div id="sidebar-branding">
+          <img id="header-logo" src="amd-ryzen-ai-9hx.jpg" alt="AMD Ryzen AI">
+          <span id="sidebar-title">Local LLM Chat</span>
+          <div id="status-indicator" title="Verbindungsstatus"></div>
+        </div>
         <button id="new-chat-btn">+ Neuer Chat</button>
       </div>
       <div id="chat-list"></div>
