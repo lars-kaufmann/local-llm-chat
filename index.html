@@ -672,10 +672,7 @@
       border: 1px solid #f0c8a0;
     }
 
-    [data-theme="light"] .message.user .role-label,
-    [data-theme="light"] .message.user .copy-msg-btn,
-    [data-theme="light"] .message.user .resend-msg-btn,
-    [data-theme="light"] .message.user .edit-msg-btn {
+    [data-theme="light"] .message.user .copy-msg-btn {
       color: var(--text-muted);
     }
 
@@ -717,9 +714,7 @@
       gap: 4px;
     }
 
-    .message .copy-msg-btn,
-    .message .resend-msg-btn,
-    .message .edit-msg-btn {
+    .message .copy-msg-btn {
       background: none;
       border: none;
       color: var(--text-muted);
@@ -733,65 +728,17 @@
       align-items: center;
     }
 
-    .message .copy-msg-btn svg,
-    .message .resend-msg-btn svg,
-    .message .edit-msg-btn svg {
+    .message .copy-msg-btn svg {
       width: 14px;
       height: 14px;
     }
 
-    .message:hover .copy-msg-btn,
-    .message:hover .resend-msg-btn,
-    .message:hover .edit-msg-btn {
+    .message:hover .copy-msg-btn {
       opacity: 1;
     }
 
-    .message .copy-msg-btn:hover,
-    .message .resend-msg-btn:hover,
-    .message .edit-msg-btn:hover {
+    .message .copy-msg-btn:hover {
       color: var(--accent);
-    }
-
-    .msg-edit-area {
-      width: 100%;
-      background: var(--input-bg);
-      color: var(--text);
-      border: 1px solid var(--accent);
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 14px;
-      font-family: inherit;
-      resize: vertical;
-      min-height: 48px;
-      outline: none;
-      line-height: 1.5;
-    }
-
-    .msg-edit-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-      justify-content: flex-end;
-    }
-
-    .msg-edit-actions button {
-      border: none;
-      border-radius: 6px;
-      padding: 4px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .msg-edit-actions .edit-save-btn {
-      background: var(--accent);
-      color: white;
-    }
-
-    .msg-edit-actions .edit-cancel-btn {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
     }
 
     .msg-token-info {
@@ -1286,6 +1233,9 @@
       maxTokens: 2048,
       topP: 0.9,
       abortController: null,
+      promptHistory: JSON.parse(localStorage.getItem('llm-chat-prompt-history') || '[]'),
+      promptHistoryIndex: -1,
+      promptHistoryDraft: '',
     };
 
     // Load saved settings
@@ -1456,16 +1406,81 @@
     });
 
     // --- Auto-resize textarea ---
-    messageInput.addEventListener('input', () => {
-      messageInput.style.height = 'auto';
-      messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
-    });
+    // --- Prompt History (bash-style arrow navigation) ---
+    function addToHistory(text) {
+      if (!text.trim()) return;
+      // Don't add duplicates of the most recent entry
+      if (state.promptHistory.length > 0 && state.promptHistory[0] === text) return;
+      state.promptHistory.unshift(text);
+      // Keep max 100 entries
+      if (state.promptHistory.length > 100) state.promptHistory.pop();
+      localStorage.setItem('llm-chat-prompt-history', JSON.stringify(state.promptHistory));
+      state.promptHistoryIndex = -1;
+      state.promptHistoryDraft = '';
+    }
 
-    // --- Send on Enter ---
     messageInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
+        return;
+      }
+
+      // Arrow up: navigate to older prompts
+      if (e.key === 'ArrowUp' && messageInput.selectionStart === 0 && messageInput.selectionEnd === 0) {
+        e.preventDefault();
+        if (state.promptHistory.length === 0) return;
+
+        // Save current draft when starting navigation
+        if (state.promptHistoryIndex === -1) {
+          state.promptHistoryDraft = messageInput.value;
+        }
+
+        if (state.promptHistoryIndex < state.promptHistory.length - 1) {
+          state.promptHistoryIndex++;
+          messageInput.value = state.promptHistory[state.promptHistoryIndex];
+          messageInput.style.height = 'auto';
+          messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+          // Put cursor at end
+          messageInput.selectionStart = messageInput.selectionEnd = messageInput.value.length;
+        }
+        return;
+      }
+
+      // Arrow down: navigate to newer prompts or back to draft
+      if (e.key === 'ArrowDown' && messageInput.selectionStart === messageInput.value.length && messageInput.selectionEnd === messageInput.value.length) {
+        e.preventDefault();
+        if (state.promptHistoryIndex === -1) return;
+
+        if (state.promptHistoryIndex > 0) {
+          state.promptHistoryIndex--;
+          messageInput.value = state.promptHistory[state.promptHistoryIndex];
+        } else {
+          state.promptHistoryIndex = -1;
+          messageInput.value = state.promptHistoryDraft;
+        }
+        messageInput.style.height = 'auto';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+        messageInput.selectionStart = messageInput.selectionEnd = messageInput.value.length;
+        return;
+      }
+
+      // Any other key: reset history navigation
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
+        if (state.promptHistoryIndex !== -1) {
+          state.promptHistoryIndex = -1;
+          state.promptHistoryDraft = '';
+        }
+      }
+    });
+
+    // Reset history index when user types
+    messageInput.addEventListener('input', () => {
+      messageInput.style.height = 'auto';
+      messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+      if (state.promptHistoryIndex !== -1) {
+        state.promptHistoryIndex = -1;
+        state.promptHistoryDraft = '';
       }
     });
 
@@ -1653,6 +1668,7 @@
       messageInput.value = '';
       messageInput.style.height = 'auto';
 
+      addToHistory(text);
       saveCurrentConversation();
       renderChatList();
 
@@ -1828,73 +1844,6 @@
       });
     }
 
-    function resendMessage(btn) {
-      if (state.isGenerating) return;
-      const msgEl = btn.closest('.message');
-      const contentEl = msgEl.querySelector('.msg-content');
-      const text = contentEl.textContent;
-      if (text) {
-        messageInput.value = text;
-        messageInput.focus();
-        sendMessage();
-      }
-    }
-
-    function editMessage(btn) {
-      if (state.isGenerating) return;
-      const msgEl = btn.closest('.message');
-      const contentEl = msgEl.querySelector('.msg-content');
-      const msgIndex = Array.from(chatContainer.querySelectorAll('.message')).indexOf(msgEl);
-      const originalText = state.messages[msgIndex]?.content || contentEl.textContent;
-
-      const textarea = document.createElement('textarea');
-      textarea.className = 'msg-edit-area';
-      textarea.value = originalText;
-
-      const editActions = document.createElement('div');
-      editActions.className = 'msg-edit-actions';
-
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'edit-save-btn';
-      saveBtn.textContent = 'Senden';
-
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'edit-cancel-btn';
-      cancelBtn.textContent = 'Abbrechen';
-
-      editActions.appendChild(cancelBtn);
-      editActions.appendChild(saveBtn);
-
-      contentEl.style.display = 'none';
-      msgEl.appendChild(textarea);
-      msgEl.appendChild(editActions);
-      textarea.focus();
-      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-
-      cancelBtn.addEventListener('click', () => {
-        textarea.remove();
-        editActions.remove();
-        contentEl.style.display = '';
-      });
-
-      saveBtn.addEventListener('click', () => {
-        const newText = textarea.value.trim();
-        if (!newText) return;
-        // Truncate conversation at this message index
-        state.messages = state.messages.slice(0, msgIndex);
-        state.messages.push({ role: 'user', content: newText });
-        saveCurrentConversation();
-        renderChat();
-        // Trigger generation
-        state.isGenerating = true;
-        sendBtn.disabled = true;
-        sendBtn.textContent = 'Stop';
-        sendBtn.disabled = false;
-        sendBtn.onclick = stopGenerating;
-        generateResponse();
-      });
-    }
-
     function appendMessage(role, content, addToState, usage, duration) {
       const div = document.createElement('div');
       div.className = `message ${role}`;
@@ -1916,21 +1865,6 @@
       actions.className = 'msg-actions';
 
       header.appendChild(label);
-      if (role === 'user') {
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-msg-btn';
-        editBtn.title = 'Bearbeiten';
-        editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-        editBtn.addEventListener('click', function() { editMessage(this); });
-        actions.appendChild(editBtn);
-
-        const resendBtn = document.createElement('button');
-        resendBtn.className = 'resend-msg-btn';
-        resendBtn.title = 'Erneut senden';
-        resendBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
-        resendBtn.addEventListener('click', function() { resendMessage(this); });
-        actions.appendChild(resendBtn);
-      }
       actions.appendChild(copyBtn);
       header.appendChild(actions);
 
